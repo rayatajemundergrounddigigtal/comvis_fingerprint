@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.query_tmp.png
+hasil_demo.png
+dataset/
+.ipynb_checkpoints/
+*.log
