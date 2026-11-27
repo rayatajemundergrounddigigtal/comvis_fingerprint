@@ -199,14 +199,14 @@ with tab1:
     with col_q:
         with st.container(border=True):
             st.markdown("#### 📤 Jari Pertama")
-            up_q = st.file_uploader("Unggah gambar", hide_input_label=True,
+            up_q = st.file_uploader("Unggah gambar",
                                     type=["png", "jpg", "jpeg", "bmp", "tif"], key="q")
             if up_q:
                 st.success(f"✓ {up_q.name}")
     with col_r:
         with st.container(border=True):
             st.markdown("#### 📤 Jari Kedua")
-            up_r = st.file_uploader("Unggah gambar", hide_input_label=True,
+            up_r = st.file_uploader("Unggah gambar",
                                     type=["png", "jpg", "jpeg", "bmp", "tif"], key="r")
             if up_r:
                 st.success(f"✓ {up_r.name}")
@@ -257,7 +257,7 @@ with tab2:
     with col_up:
         with st.container(border=True):
             st.markdown("#### 📤 Unggah 1 gambar jari")
-            up_id = st.file_uploader("Unggah gambar", hide_input_label=True,
+            up_id = st.file_uploader("Unggah gambar",
                                      type=["png", "jpg", "jpeg", "bmp", "tif"], key="id")
             if up_id:
                 st.success(f"✓ {up_id.name}")
