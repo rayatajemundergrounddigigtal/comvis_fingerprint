@@ -97,13 +97,13 @@ def sweep_threshold(daftar_skor):
 def mode_synthetic(threshold, sweep=False):
     s = "samples/"
     pasangan = [
-        (s + "jari_A.png", s + "jari_A.png", True),         # identik
-        (s + "jari_A.png", s + "jari_A_rotasi.png", True),  # rotasi 15 derajat
-        (s + "jari_A.png", s + "jari_A_noise.png", True),   # noisy (LS 4)
-        (s + "jari_A.png", s + "jari_A_blur.png", True),    # blur
-        (s + "jari_A.png", s + "jari_B.png", False),        # orang lain
-        (s + "jari_A.png", s + "jari_C.png", False),        # orang lain
-        (s + "jari_B.png", s + "jari_C.png", False),        # orang lain
+        (s + "kamal.png", s + "kamal.png", True),         # identik
+        (s + "kamal.png", s + "kamal_rotasi.png", True),  # rotasi 15 derajat
+        (s + "kamal.png", s + "kamal_noise.png", True),   # noisy (LS 4)
+        (s + "kamal.png", s + "kamal_blur.png", True),    # blur
+        (s + "kamal.png", s + "wafiq.png", False),        # orang lain
+        (s + "kamal.png", s + "algita.png", False),       # orang lain
+        (s + "wafiq.png", s + "algita.png", False),       # orang lain
     ]
     print("=== MODE SINTETIS ===")
     skor = uji_pasangan(pasangan, threshold, tampilkan=not sweep)
@@ -158,13 +158,13 @@ def mode_identifikasi(threshold):
 
     s = "samples/"
     uji = [
-        (s + "jari_A.png", "Andi"),
-        (s + "jari_A_rotasi.png", "Andi"),
-        (s + "jari_A_noise.png", "Andi"),
-        (s + "jari_A_blur.png", "Andi"),
-        (s + "jari_B.png", "Budi"),
-        (s + "jari_C.png", "Citra"),
-        (s + "jari_asing.png", None),   # bukan pengguna -> harus ditolak
+        (s + "kamal.png", "Kamal"),
+        (s + "kamal_rotasi.png", "Kamal"),
+        (s + "kamal_noise.png", "Kamal"),
+        (s + "kamal_blur.png", "Kamal"),
+        (s + "wafiq.png", "Wafiq"),
+        (s + "algita.png", "Algita"),
+        (s + "asing.png", None),   # bukan pengguna -> harus ditolak
     ]
     print("=== MODE IDENTIFIKASI (1-lawan-N, database/) ===")
     benar = 0

@@ -108,37 +108,19 @@ div[data-testid="stMetricValue"] {color:#f8fafc;}
 
 # ---------------- Sidebar: kontrol parameter ----------------
 with st.sidebar:
-    st.markdown("## ⚙️ Kontrol Pipeline")
-    st.caption("Geser — hasil ikut berubah. Sama seperti trackbar di GUI OpenCV.")
-
-    threshold = st.slider("🚦 Ambang keputusan (%)", 1, 40, 7,
-                          help="Skor ≥ ambang → COCOK. Rendah = jari asing bisa lolos "
-                               "(FAR naik). Tinggi = pemilik asli bisa ditolak (FRR naik).")
-    clip = st.slider("✨ Kekuatan CLAHE (clipLimit)", 1.0, 8.0, 3.0, 0.5,
-                     help="LS 3 — kontras lokal per tile. Kecil = datar, besar = noise ikut kuat.")
-    tile_grid = st.slider("🧩 Grid CLAHE (jumlah tile)", 4, 16, 8, 2,
-                          help="LS 3 — jumlah 'kamar' pemecahan. Besar = adaptasi lebih lokal.")
-    unsharp = st.slider("🔪 Unsharp masking (k)", 0.0, 1.5, 0.0, 0.1,
-                        help="LS 4 — penajaman opsional. Default mati: CLAHE sudah cukup.")
+    st.markdown("## ⚙️ Pengaturan")
+    threshold = st.slider("Ambang kecocokan (%)", 1, 40, 7)
+    clip = st.slider("Kejelasan gambar (CLAHE)", 1.0, 8.0, 3.0, 0.5)
+    tile_grid = st.slider("Detail CLAHE (grid)", 4, 16, 8, 2)
+    unsharp = st.slider("Penajaman", 0.0, 1.5, 0.0, 0.1)
 
     st.divider()
-    st.markdown("### 👁️ Tahapan yang ditampilkan")
+    st.markdown("### Tahapan yang ditampilkan")
     tampil = st.pills("Tahapan",
                       ["Asli", "CLAHE", "Filter", "Biner", "Morfologi"],
                       selection_mode="multi",
                       default=["Asli", "CLAHE", "Filter", "Biner", "Morfologi"],
                       label_visibility="collapsed")
-
-    st.divider()
-    st.markdown("### ℹ️ Trade-off ambang")
-    st.markdown(
-        f"""
-        | Ambang | Dampak |
-        |---|---|
-        | `{threshold}%` | {"🔓 longgar — FAR naik" if threshold < 4 else "🔒 rapat — FRR naik" if threshold > 12 else "⚖️ zona optimal (4–12%)"} |
-        """)
-    st.caption("Default 7% = hasil kalibrasi FAR/FRR "
-               "(`python3 evaluate.py --synthetic --sweep`).")
 
 # ---------------- Util ----------------
 
@@ -153,25 +135,25 @@ def baca_upload(uploaded_file, ukuran=(400, 400)):
 
 
 def kotak(img, judul):
-    """Panel satu tahapan berlabel (versi web dari main.py)."""
+    """Panel satu tahapan berlabel."""
     if img.ndim == 2:
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
     else:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = cv2.resize(img, (220, 220))
     label = np.full((26, 220, 3), 24, np.uint8)
-    cv2.putText(label, judul, (6, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (160, 220, 255), 1)
+    cv2.putText(label, judul, (8, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (200, 200, 200), 1)
     return np.vstack([label, img])
 
 
 def urutan_tahapan(tahap, seg, prefix=""):
     """Daftar (label, gambar) sesuai pill yang dipilih user."""
     semua = [
-        ("Asli", kotak(tahap["asli"], f"{prefix}1. Asli (LS1-2)")),
-        ("CLAHE", kotak(tahap["clahe"], f"{prefix}2. CLAHE (LS3)")),
-        ("Filter", kotak(tahap["enhanced"], f"{prefix}3. Filter (LS4)")),
-        ("Biner", kotak(seg["biner"], f"{prefix}4. Biner (LS7)")),
-        ("Morfologi", kotak(seg["morfologi"], f"{prefix}5. Morfologi (LS6)")),
+        ("Asli", kotak(tahap["asli"], f"{prefix}Asli")),
+        ("CLAHE", kotak(tahap["clahe"], f"{prefix}CLAHE")),
+        ("Filter", kotak(tahap["enhanced"], f"{prefix}Dibersihkan")),
+        ("Biner", kotak(seg["biner"], f"{prefix}Hitam-Putih")),
+        ("Morfologi", kotak(seg["morfologi"], f"{prefix}Hasil Akhir")),
     ]
     return [g for k, g in semua if k in tampil]
 
@@ -193,49 +175,41 @@ def chip(cocok, teks_ok="COCOK — AKSES DITERIMA", teks_no="TIDAK COCOK — AKS
 
 
 def metrik_skor(skor, cocok_jumlah, kp):
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("🎯 Skor kemiripan", f"{skor:.1f}%")
-    c2.metric("🚦 Ambang", f"{threshold:.0f}%")
-    c3.metric("🔗 Titik cocok", cocok_jumlah)
-    c4.metric("📍 Keypoint ORB", kp)
+    c1, c2 = st.columns(2)
+    c1.metric("🎯 Skor kecocokan", f"{skor:.1f}%")
+    c2.metric("🚦 Ambang lulus", f"{threshold:.0f}%")
 
 
 # ---------------- Hero ----------------
 st.markdown('<div class="hero-title">🫆 Fingerprint Matcher</div>',
             unsafe_allow_html=True)
-st.markdown('<div class="hero-sub">UAS Praktikum Computer Vision — Semester 3 · '
-            'Pipeline: Grayscale → <b>CLAHE</b> → Filter → Threshold → Morfologi → '
-            '<b>ORB Matching</b> → Keputusan</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-sub">Unggah gambar sidik jari — sistem '
+            'memeriksa kecocokannya secara otomatis.</div>', unsafe_allow_html=True)
+st.divider()
 
 # Peringatan database kosong (untuk tab identifikasi)
 db_files = daftar_file_db("database/") if os.path.isdir("database/") else []
 
 tab1, tab2, tab3 = st.tabs(
-    ["🔐 Verifikasi (1-lawan-1)", "🔍 Identifikasi (1-lawan-N)", "📚 Tentang & Materi"])
+    ["🔐 Kecocokan Dua Jari", "🔍 Cari Pemilik Jari", "❓ Cara Kerja"])
 
 # ================= TAB 1: VERIFIKASI =================
 with tab1:
-    st.markdown("*Pertanyaan yang dijawab: **apakah jari ini milik orang yang sama?***")
-
     col_q, col_r = st.columns(2)
     with col_q:
         with st.container(border=True):
-            st.markdown("#### 📤 Gambar UJI (query)")
-            up_q = st.file_uploader("Pilih gambar jari yang dites",
+            st.markdown("#### 📤 Jari Pertama")
+            up_q = st.file_uploader("Unggah gambar", hide_input_label=True,
                                     type=["png", "jpg", "jpeg", "bmp", "tif"], key="q")
             if up_q:
                 st.success(f"✓ {up_q.name}")
-            else:
-                st.caption("💡 Contoh: `samples/jari_A.png`")
     with col_r:
         with st.container(border=True):
-            st.markdown("#### 📤 Gambar REFERENSI (terdaftar)")
-            up_r = st.file_uploader("Pilih gambar pembanding",
+            st.markdown("#### 📤 Jari Kedua")
+            up_r = st.file_uploader("Unggah gambar", hide_input_label=True,
                                     type=["png", "jpg", "jpeg", "bmp", "tif"], key="r")
             if up_r:
                 st.success(f"✓ {up_r.name}")
-            else:
-                st.caption("💡 Contoh: `samples/jari_A_rotasi.png`")
 
     if up_q and up_r:
         q_img = baca_upload(up_q)
@@ -243,7 +217,7 @@ with tab1:
         if q_img is None or r_img is None:
             st.error("File tidak bisa dibaca sebagai gambar. Gunakan PNG/JPG/BMP.")
         else:
-            with st.spinner("Memproses pipeline... CLAHE → filter → ORB → matching"):
+            with st.spinner("Memeriksa kecocokan..."):
                 q_tahap = enhance(q_img, clip_limit=clip,
                                   tile_grid=(tile_grid, tile_grid), unsharp_k=unsharp)
                 r_tahap = enhance(r_img, clip_limit=clip,
@@ -259,26 +233,21 @@ with tab1:
                         f"{hasil['jumlah_kp'][0]} vs {hasil['jumlah_kp'][1]}")
             if hasil["gambar_match"] is not None:
                 st.image(cv2.cvtColor(hasil["gambar_match"], cv2.COLOR_BGR2RGB),
-                         caption="🔗 Garis hijau = titik yang cocok (ratio test 0.75)",
+                         caption="🔗 Garis hijau = titik yang cocok di kedua jari",
                          use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-            st.markdown("#### 🧪 Tahapan pemrosesan")
-            st.markdown("**Query**")
-            tampilkan_baris_tahapan(q_tahap, q_seg, prefix="Q")
-            st.markdown("**Referensi**")
-            tampilkan_baris_tahapan(r_tahap, r_seg, prefix="R")
+            st.markdown("#### 🧪 Proses pemeriksaan")
+            tampilkan_baris_tahapan(q_tahap, q_seg)
+            tampilkan_baris_tahapan(r_tahap, r_seg)
     else:
-        st.info("ℹ️ Upload **kedua** gambar di atas — hasil muncul otomatis.")
+        st.info("ℹ️ Unggah **kedua** gambar di atas — hasil muncul otomatis.")
 
 # ================= TAB 2: IDENTIFIKASI =================
 with tab2:
-    st.markdown("*Pertanyaan yang dijawab: **jari ini milik siapa?*** "
-                "Sistem membandingkan query ke semua pengguna di folder `database/`.")
-
     if not db_files:
         st.warning("Database masih kosong. Jalankan `python3 generate_samples.py` "
-                   "di terminal sekali untuk membuat pengguna: Andi, Budi, Citra.")
+                   "di terminal sekali untuk membuat pengguna: Kamal, Wafiq, Algita.")
     else:
         st.caption(f"📁 {len(db_files)} pengguna terdaftar: " +
                    ", ".join(os.path.splitext(os.path.basename(f))[0]
@@ -287,8 +256,8 @@ with tab2:
     col_up, col_db = st.columns([2, 1])
     with col_up:
         with st.container(border=True):
-            st.markdown("#### 📤 Upload 1 gambar jari")
-            up_id = st.file_uploader("Pilih gambar yang akan dicari pemiliknya",
+            st.markdown("#### 📤 Unggah 1 gambar jari")
+            up_id = st.file_uploader("Unggah gambar", hide_input_label=True,
                                      type=["png", "jpg", "jpeg", "bmp", "tif"], key="id")
             if up_id:
                 st.success(f"✓ {up_id.name}")
@@ -304,7 +273,7 @@ with tab2:
             if q_img is None:
                 st.error("File tidak bisa dibaca sebagai gambar.")
             else:
-                with st.spinner("Memindai database..."):
+                with st.spinner("Memeriksa semua pengguna..."):
                     tmp = ".query_tmp.png"
                     cv2.imwrite(tmp, q_img)
                     idn = identifikasi(tmp, folder_db, threshold,
@@ -333,70 +302,64 @@ with tab2:
                 if terbaik["hasil"]["gambar_match"] is not None:
                     st.image(cv2.cvtColor(terbaik["hasil"]["gambar_match"],
                                           cv2.COLOR_BGR2RGB),
-                             caption=f"🔗 Query vs kandidat terbaik ({terbaik['nama']})",
+                             caption=f"🔗 Gambar vs kandidat terbaik ({terbaik['nama']})",
                              use_container_width=True)
 
-                st.markdown("#### 🧪 Tahapan pemrosesan")
+                st.markdown("#### 🧪 Proses pemeriksaan")
                 q_tahap = idn["query_tahap"]
                 r_tahap = terbaik["tahap"]
                 q_seg = segmentasi_lengkap(q_tahap["enhanced"])
                 r_seg = segmentasi_lengkap(r_tahap["enhanced"])
-                st.markdown("**Query (jari yang dicari)**")
-                tampilkan_baris_tahapan(q_tahap, q_seg, prefix="Q")
-                st.markdown(f"**{terbaik['nama']} (kandidat terbaik)**")
-                tampilkan_baris_tahapan(r_tahap, r_seg, prefix=terbaik["nama"] + " — ")
+                tampilkan_baris_tahapan(q_tahap, q_seg)
+                tampilkan_baris_tahapan(r_tahap, r_seg)
 
-# ================= TAB 3: TENTANG =================
+# ================= TAB 3: CARA KERJA (SIMPel) =================
 with tab3:
+    st.markdown('<div class="glass">', unsafe_allow_html=True)
+    st.markdown("""
+### 🫆 Sistem ini bekerja seperti detektif sidik jari
+
+**1. Perjelas gambar** — foto jari yang gelap atau pudar ditingkatkan
+kejelasannya, garis-garisnya jadi terlihat tegas.
+
+**2. Bersihkan noise** — bintik kotor dari kamera diredam supaya tidak
+terbaca sebagai garis palsu.
+
+**3. Tandai titik unik** — program menandai ±1000 titik khas di jari:
+percabangan, ujung garis, persimpangan.
+
+**4. Cocokkan** — titik-titik di gambar pertama dicari "kembarannya"
+di gambar kedua. Titik yang cocok digambar garis hijau.
+
+**5. Hitung skor** — berapa persen titik yang cocok. Di atas ambang →
+**AKSES DITERIMA** ✅, di bawahnya → **DITOLAK** ❌.
+""")
+    st.markdown('</div>', unsafe_allow_html=True)
+
     c1, c2 = st.columns(2)
     with c1:
         st.markdown('<div class="glass">', unsafe_allow_html=True)
-        st.markdown("### 🔁 Verifikasi vs Identifikasi")
-        st.markdown("""
-| Mode | Pertanyaan | Butuh |
-|---|---|---|
-| **Verifikasi** (1-lawan-1) | "Apakah jari ini milik **X**?" | 2 gambar |
-| **Identifikasi** (1-lawan-N) | "Jari ini milik **siapa**?" | 1 gambar + database |
-""")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('<div class="glass">', unsafe_allow_html=True)
-        st.markdown("### 📚 Peta Materi Labsheet")
-        st.markdown("""
-| LS | Materi | Peran di sini |
-|---|---|---|
-| 1–2 | I/O, grayscale, resize | Fondasi input |
-| **3** | **Histogram & CLAHE** ⭐ | **Kontras ridge per tile + clipLimit** |
-| 4 | GaussianBlur, unsharp | Redam noise sebelum matching |
-| 6 | Opening/Closing | Bersihkan citra biner (panel) |
-| 7 | Otsu/Adaptive | Binarisasi (panel) |
-| Baru | ORB + BFMatcher + ratio test | Jantung pencocokan |
-""")
+        st.markdown("### 🔐 Kecocokan Dua Jari")
+        st.markdown("Unggah 2 gambar. Sistem menjawab: *apakah ini jari yang sama?*")
         st.markdown('</div>', unsafe_allow_html=True)
     with c2:
         st.markdown('<div class="glass">', unsafe_allow_html=True)
-        st.markdown("### ⚙️ Cara kerja (versi singkat)")
-        st.markdown("""
-1. **Baca & bersihkan** — gambar jadi grayscale 400×400.
-2. **CLAHE (LS 3)** ⭐ — kontras diperbaiki *per tile 8×8* dengan pembatas
-   `clipLimit`, supaya ridge yang pudar tetap terbaca tanpa memperkuat noise.
-3. **Filter (LS 4)** — Gaussian blur meredam noise halus.
-4. **ORB** — tandai ±1000 titik unik (percabangan, ujung garis) + descriptor
-   biner 256 bit yang tahan rotasi.
-5. **BFMatcher + ratio test 0.75** — hitung pasangan titik yang yakin cocok.
-6. **Skor** = titik cocok ÷ keypoint × 100%. ≥ ambang → **AKSES DITERIMA**.
-""")
+        st.markdown("### 🔍 Cari Pemilik Jari")
+        st.markdown("Unggah 1 gambar. Sistem memeriksanya ke semua pengguna "
+                    "terdaftar dan menyebutkan pemiliknya.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="glass">', unsafe_allow_html=True)
-        st.markdown("### 🗣️ Analogi 30 detik")
-        st.markdown("""
-> *"Program ini seperti detektif sidik: foto jari dulu 'dipercantik' per
-> wilayah dengan CLAHE (tiap kamar dapat pencahayaan pas — dibatasi supaya
-> debunya tidak ikut terlihat). Lalu ia menandai landmark unik di dua peta
-> dan menghitung berapa yang sama. Banyak yang sama → jari yang sama."*
+    st.markdown('<div class="glass">', unsafe_allow_html=True)
+    st.markdown("### 🎛️ Apa fungsi slider di sidebar?")
+    st.markdown("""
+| Slider | Fungsinya |
+|---|---|
+| **Ambang kecocokan** | Batas lulus/tidak. Turunkan = pintu lebih longgar, naikkan = lebih ketat |
+| **Kejelasan gambar** | Seberapa kuat gambar dipertajam kontrasnya — geser dan lihat garis jari berubah |
+| **Detail CLAHE** | Seberapa halus pembagian area penguatan |
+| **Penajaman** | Penajaman tambahan (opsional, default mati) |
 """)
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 st.caption("🖥️ GUI OpenCV alternatif: `python3 main.py` · "

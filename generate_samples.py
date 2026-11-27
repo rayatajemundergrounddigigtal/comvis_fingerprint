@@ -93,26 +93,26 @@ def utama():
     b = buat_sidik_jari(seed=77)
     c = buat_sidik_jari(seed=123)
 
-    cv2.imwrite("samples/jari_A.png", a)
-    cv2.imwrite("samples/jari_A_rotasi.png", rotasi(a, 15))
+    cv2.imwrite("samples/kamal.png", a)
+    cv2.imwrite("samples/kamal_rotasi.png", rotasi(a, 15))
 
     noisy = tambah_noise_salt_pepper(a, 0.02, 0.02)   # LS 4
     noisy = tambah_noise_gaussian(noisy, var=0.02)    # LS 4
-    cv2.imwrite("samples/jari_A_noise.png", noisy)
+    cv2.imwrite("samples/kamal_noise.png", noisy)
 
-    cv2.imwrite("samples/jari_A_blur.png", cv2.GaussianBlur(a, (9, 9), 3))
-    cv2.imwrite("samples/jari_B.png", b)
-    cv2.imwrite("samples/jari_C.png", c)
-    cv2.imwrite("samples/jari_asing.png", buat_sidik_jari(seed=999))
+    cv2.imwrite("samples/kamal_blur.png", cv2.GaussianBlur(a, (9, 9), 3))
+    cv2.imwrite("samples/wafiq.png", b)
+    cv2.imwrite("samples/algita.png", c)
+    cv2.imwrite("samples/asing.png", buat_sidik_jari(seed=999))
 
     # Database "pengguna terdaftar" untuk mode identification (1-lawan-N).
     # Nama file = nama pemilik, supaya banner demo menampilkan nama orang.
     os.makedirs("database", exist_ok=True)
-    cv2.imwrite("database/Andi.png", a)
-    cv2.imwrite("database/Budi.png", b)
-    cv2.imwrite("database/Citra.png", c)
+    cv2.imwrite("database/Kamal.png", a)
+    cv2.imwrite("database/Wafiq.png", b)
+    cv2.imwrite("database/Algita.png", c)
     print("Sampel berhasil dibuat di folder samples/ (7 file).")
-    print("Database pengguna terdaftar: database/ (Andi, Budi, Citra).")
+    print("Database pengguna terdaftar: database/ (Kamal, Wafiq, Algita).")
 
 
 if __name__ == "__main__":
